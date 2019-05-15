@@ -399,7 +399,7 @@ Images recognition networks trained in the previously published papers generally
 %  ($L\rightarrow Y$) from the relationship ($X\rightarrow Y$) 
 
 
-\subsection{~~~~}
+% \subsection{~~~~}
 
 
 
@@ -427,6 +427,46 @@ Images recognition networks trained in the previously published papers generally
 %\end{table}
 
 % command of the stfloats package.
+\section{Reproduction}
+In this part, we are going to reproduce section 5.1\cite{street} and show the results on the public Street View House Numbers dataset. The detailed information is described as below.
+\subsection{SVHN dataset}
+The SVHN dataset is obtained from \cite{image}.It contains 200k street numbers with the location information of individual digit in each image. 
+
+In the data preprocessing, we find the rectangular bounding box that only contains an individual character firstly. Then we expand the bounding box in both $x$ and $y$ direction by 30\% to crop the image. Next, resize the output to $64\times64$ pixels. To increase the size of the dataset, we will randomly choose a location with a $54\times54$ window to crop this $64\times64$ image many times as this can give us multiple versions from one training image. 
+\subsection{Architecture}
+The model used to train is a Convolutional Neural Netwrok with 11 hidden layers. The first 8 hidden layers are convolutional ones followed by 2 densely connected hidden layers and 1 locally connected hidden one. Each convolutional layer is with a kernel filter in $5\times5$, a $2\times2$ window to achieve max pooling, a batch normalization unit and a generalization part which is a maxout unit in the first convolutional layer and ReLU in the left 7 layers. The architecture is shown in Fig\ref{fig1}.
+
+\begin{figure}[h]
+\centering
+% \begin{subfigure}[b]{0.5\textwidth}%
+% \includegraphics[width=0.75\linewidth]{"A48".jpg}
+% \caption{Stock A48TKB; Strike price: 5600}
+% \label{fig1:sub1}
+% \end{subfigure}%
+% \begin{subfigure}[b]{0.5\textwidth}%
+% \includegraphics[width=0.75\linewidth]{"C22".jpg}
+% \caption{Stock C22BMY; Strike price: 4800}
+% \label{fig1:sub2}
+% \end{subfigure}
+% \begin{subfigure}[b]{0.5\textwidth}%
+\includegraphics[width=0.75\linewidth]{"arch".jpeg}
+\caption{Model architecture. The output of the first convolutional layer is $32\times27\times27\times48$ where 32 is batch size, 48 is the number of units at each spatial location, and 27 is the output dimension. The output dimension of convolutional layer is calculated by $O=\frac{I-K+2P}{S}+1$ where $I$ is the input dimension, $K$ is kernel size, $P$ is padding and $S$ is for strike. In the computation of the output of the first layer, $I=54, K=5, P=2, S=2$. And after max pooling, the dimension is calculated by $O=\frac{I-P}{S}+1$ using the parameter value from last step. They are $I=27, P=1, S=1$ respectively, so the final output dimension is 27. The red number part shows after the convolution and max pooling, the output matrix is required to be flattened to be proceeded into the densely connected layers.   }
+% \label{fig1:sub3}
+% \end{subfigure}
+
+\label{fig1}
+\end{figure}
+To achieve the maxout unit, we used 3 filters to project the original matrix seperately and only keep the maximum as the output. In addition, the stride used at each convolutional layer alternates between 2 and 1. Therefore, half the convolutional layers do not reduce the representation size. We also use zero padding in all the convolutional layers to keep spatial size of representation. To avoid the overfitting case, dropout units are used in the training part.
+
+Another interesting point is that we use a parameter named $coverage$ in the model. The $coverage$ is defined as the proportion of inputs which is not discarded\cite{street}. And we use "confidence threshold" to decide what to discard. For example, we set up a "confidence threhold" as 0.8 at first. Then any output vectors obtained from softmax unit would be discarded if the value of the maximum component is lower than 0.8.
+
+Obviously, the value of $coverage$ will decrease if we set up a higher "confidence threhold". Therefore, at the beginning, we will set up a higher "confidence threshold" to help the model achieve a certain accuracy level. And when it performs well, we will increase the value of $coverage$ by reducing the "confidence threshold". \subsection{Experimemt results}
+
+
+
+
+
+
 \section{Evaluation}
 
 
@@ -483,7 +523,8 @@ Dean, Jeffrey, et al. "Large scale distributed deep networks." Advances in neura
 Goodfellow, Ian J., et al. "Multi-digit number recognition from street view imagery using deep convolutional neural networks." arXiv preprint arXiv:1312.6082 (2013).
 \bibitem{maxout}
 Goodfellow, Ian J., et al. "Maxout networks." arXiv preprint arXiv:1302.4389 (2013).
-
+\bibitem{image}
+http://ufldl.stanford.edu/housenumbers/
 
 
 
